@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRIVE // Calvin's Blueprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-24">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12h18M12 3v18"></path></svg>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg tracking-tight text-white flex items-center gap-2">
+                    STRIVE <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">Calvin's Protocol</span>
+                </h1>
+                <p class="text-xs text-slate-400">Target: 195-205 lbs (Recomposition & Hybrid Base)</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <div id="streakBadge" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
+                🔥 <span id="streakCount">0</span> Day Streak
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="glass-card p-4 rounded-2xl">
+                <div class="text-xs text-slate-400 font-medium mb-1">Weekly Consistency</div>
+                <div class="flex items-baseline justify-between">
+                    <span id="consistencyPct" class="text-2xl font-black text-white">0%</span>
+                    <span class="text-xs text-emerald-400 font-semibold" id="completedCount">0 / 4 Lifts</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
+                    <div id="consistencyBar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+                <div class="text-xs text-slate-400 font-medium">Active Training Phase</div>
+                <div class="text-lg font-bold text-white mt-1">Week 1 of 8</div>
+                <div class="text-xs text-blue-400 font-medium mt-2">Strength & Fat Loss Recomp</div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl flex flex-col justify-between">
+                <div class="text-xs text-slate-400 font-medium">Quick Rest Timer</div>
+                <div class="flex items-center justify-between mt-1">
+                    <span id="timerDisplay" class="text-2xl font-black text-white font-mono">01:30</span>
+                    <button onclick="startRestTimer(90)" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition">Start 90s</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day Selector & Filter -->
+        <div class="glass-card p-4 rounded-2xl space-y-3">
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div class="w-full sm:w-1/2">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Select Day</label>
+                    <select id="daySelect" onchange="switchDay(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500">
+                        <option value="day1">Day 1: Upper Body A (Chest, Back & Shoulders)</option>
+                        <option value="day2">Day 2: Lower Body A (Quads, Glutes & Calves)</option>
+                        <option value="day3">Day 3: Aerobic Base Run 1 (3.0 Miles Zone 2)</option>
+                        <option value="day4">Day 4: Upper Body B (Chest, Back & Arms)</option>
+                        <option value="day5">Day 5: Lower Body B & Core (Quads & Hamstrings)</option>
+                        <option value="day6">Day 6: Aerobic Base Run 2 (3.0 Miles Zone 2)</option>
+                        <option value="day7">Day 7: Full Rest & Active Recovery</option>
+                    </select>
+                </div>
+                <div class="w-full sm:w-1/2 flex items-center justify-end gap-2">
+                    <button onclick="markCurrentDayComplete()" id="completeBtn" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                        <span>✓</span> Mark Day Completed
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workout Content Container -->
+        <div id="workoutContainer" class="space-y-6">
+            <!-- Dynamic Workout Content injected via JS -->
+        </div>
+    </main>
+
+    <!-- Rest Timer Overlay / Modal -->
+    <div id="timerModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-sm w-full p-6 rounded-3xl text-center space-y-4 border border-blue-500/30 shadow-2xl">
+            <h3 class="text-lg font-bold text-white">Rest Timer</h3>
+            <div id="modalTimerDisplay" class="text-6xl font-black text-blue-400 font-mono my-4">01:30</div>
+            <div class="flex gap-2 justify-center">
+                <button onclick="adjustTimer(30)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg">+30s</button>
+                <button onclick="adjustTimer(-30)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg">-30s</button>
+                <button onclick="stopRestTimer()" class="px-3 py-1.5 bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-semibold rounded-lg">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const workoutData = {
+            day1: {
+                title: "DAY 1: UPPER BODY A — CHEST, BACK & SHOULDERS (45 MIN)",
+                focus: "Upper Body Strength Foundation & Hypertrophy",
+                description: "No running on lifting days. Post-lift dynamic shoulder mobility & thoracic foam rolling.",
+                isLifting: true,
+                exercises: [
+                    { id: 1, name: "Dumbbell Flat Bench Press", video: "https://youtube.com", sets: "3 Sets x 8-10 Reps", rpe: "RPE 7-8" },
+                    { id: 2, name: "Seated Cable Row (Chest Tall)", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps", rpe: "RPE 7-8" },
+                    { id: 3, name: "Incline Dumbbell Press (Higher Setting)", video: "https://youtube.com", sets: "3 Sets x 8-10 Reps", rpe: "RPE 7-8" },
+                    { id: 4, name: "Lat Pulldown (Neutral Grip)", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps", rpe: "RPE 7-8" },
+                    { id: 5, name: "Standing Dumbbell Lateral Raises", video: "https://youtube.com", sets: "3 Sets x 12-15 Reps", rpe: "RPE 8-9" },
+                    { id: 6, name: "Seated Dumbbell Bicep Curls", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps", rpe: "RPE 8-9" },
+                    { id: 7, name: "Triceps Rope Pushdowns", video: "https://youtube.com", sets: "3 Sets x 12-15 Reps", rpe: "RPE 8-9" }
+                ],
+                cues: [
+                    "Keep shoulder blades retracted and depressed on all bench presses.",
+                    "Control the eccentric phase (2-3 seconds down) on cable rows and pulldowns.",
+                    "Maintain strict form on lateral raises with zero momentum."
+                ]
+            },
+            day2: {
+                title: "DAY 2: LOWER BODY A — QUADS, GLUTES & CALVES (45 MIN)",
+                focus: "Quad Hypertrophy, Posterior Chain & Ankle Stability",
+                description: "Post-lift quad, hip flexor & ankle dorsiflexion mobility flow. Zero impact.",
+                isLifting: true,
+                exercises: [
+                    { id: 1, name: "Goblet Squat (or Leg Press)", video: "https://youtube.com", sets: "3 Sets x 8-10 Reps", rpe: "RPE 7-8" },
+                    { id: 2, name: "Romanian Deadlift (DB / Barbell)", video: "https://youtube.com", sets: "3 Sets x 8-10 Reps", rpe: "RPE 7-8" },
+                    { id: 3, name: "Walking Dumbbell Lunges", video: "https://youtube.com", sets: "3 Sets x 10 Reps/leg", rpe: "RPE 8" },
+                    { id: 4, name: "Lying Hamstring Leg Curls", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps", rpe: "RPE 8-9" },
+                    { id: 5, name: "Calf Raises", video: "https://youtube.com", sets: "3 Sets x 12-15 Reps", rpe: "RPE 9" },
+                    { id: 6, name: "Hanging Leg Raise", video: "https://youtube.com", sets: "3 Sets x 10-15 Reps", rpe: "RPE 8" }
+                ],
+                cues: [
+                    "Drive through mid-foot and keep chest proud on goblet squats.",
+                    "Hinge back at the hips with a soft knee bend on Romanian deadlifts.",
+                    "Ensure full ankle dorsiflexion mobility during lower body warm-ups."
+                ]
+            },
+            day3: {
+                title: "DAY 3: AEROBIC BASE RUN 1 (3.0 MILES STEADY ZONE 2)",
+                focus: "Aerobic Base Engine & Low-Impact Fat Loss",
+                description: "Continuous Zone 2 conversational aerobic pacing (135-145 BPM). No lifting.",
+                isLifting: false,
+                exercises: [
+                    { id: 1, name: "Dynamic Runner Warm-Up (10 min)", video: "https://youtube.com", sets: "High knees, butt kicks, leg swings", rpe: "Easy" },
+                    { id: 2, name: "Cadence & Ground Strike Drills", video: "https://youtube.com", sets: "5 Mins", rpe: "Easy" },
+                    { id: 3, name: "Steady Aerobic Base Run", video: "https://youtube.com", sets: "3.0 Miles Continuous", rpe: "135-145 BPM" },
+                    { id: 4, name: "Post-Run Hip & Hamstring Stretch Flow", video: "https://youtube.com", sets: "10 Mins", rpe: "Recovery" }
+                ],
+                cues: [
+                    "Maintain conversational pace (Zone 2). If you cannot speak in full sentences, slow down.",
+                    "Keep an upright posture and light foot turnover.",
+                    "Follow with thorough post-run stretching."
+                ]
+            },
+            day4: {
+                title: "DAY 4: UPPER BODY B — CHEST, BACK & ARMS (45 MIN)",
+                focus: "Upper Chest Shelf, 3D Shoulders & Arm Peak",
+                description: "Doorway pec stretch & thoracic foam roll extensions. Zero impact.",
+                isLifting: true,
+                exercises: [
+                    { id: 1, name: "Incline Smith Machine Bench Press", video: "https://youtube.com", sets: "3 Sets x 8-10 Reps", rpe: "RPE 7-8" },
+                    { id: 2, name: "Chest-Supported Dumbbell Row", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps", rpe: "RPE 7-8" },
+                    { id: 3, name: "Single Arm Cable Lateral Raises", video: "https://youtube.com", sets: "3 Sets x 12-15 Reps", rpe: "RPE 8-9" },
+                    { id: 4, name: "Pec Dec", video: "https://youtube.com", sets: "3 Sets x 12-15 Reps", rpe: "RPE 8-9" },
+                    { id: 5, name: "Cable Face Pulls w/ External Rotation", video: "https://youtube.com", sets: "3 Sets x 15 Reps", rpe: "RPE 8" },
+                    { id: 6, name: "Dumbbell Hammer Curls", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps", rpe: "RPE 8-9" },
+                    { id: 7, name: "Single Arm Tricep Pressdown", video: "https://youtube.com", sets: "3 Sets x 12-15 Reps", rpe: "RPE 8-9" }
+                ],
+                cues: [
+                    "Focus on upper chest contraction on incline smith press.",
+                    "Lead elbows back on rows and pause briefly at peak contraction.",
+                    "Prioritize rear delt health with strict cable face pulls."
+                ]
+            },
+            day5: {
+                title: "DAY 5: LOWER BODY B & CORE — QUADS, HAMSTRINGS & CORE (45 MIN)",
+                focus: "Quad Hypertrophy, Posterior Chain Strength & Core Density",
+                description: "Post-lift 20-30 min gentle walk or core & mobility flow.",
+                isLifting: true,
+                exercises: [
+                    { id: 1, name: "Leg Extension", video: "https://youtube.com", sets: "4 Sets x 12-15 Reps", rpe: "RPE 8-9" },
+                    { id: 2, name: "Single Leg RDL", video: "https://youtube.com", sets: "4 Sets x 8-10 Reps/leg", rpe: "RPE 7-8" },
+                    { id: 3, name: "Step Ups", video: "https://youtube.com", sets: "3 Sets x 10-12 Reps/leg", rpe: "RPE 8" },
+                    { id: 4, name: "Cable Ab Twist", video: "https://youtube.com", sets: "4 Sets x 10 Reps/side", rpe: "RPE 8" },
+                    { id: 5, name: "Calf Raises", video: "https://youtube.com", sets: "4 Sets x 12-15 Reps", rpe: "RPE 9" }
+                ],
+                cues: [
+                    "Squeeze quads hard at top of leg extensions.",
+                    "Focus on balance and hip squareness during single leg RDLs and step ups.",
+                    "Rotate through the torso with control on cable ab twists."
+                ]
+            },
+            day6: {
+                title: "DAY 6: AEROBIC BASE RUN 2 (3.0 MILES STEADY ZONE 2)",
+                focus: "Cardiovascular Stamina & Accelerated Fat Loss",
+                description: "Steady continuous aerobic run (138-148 BPM, capped at 3.0 miles max).",
+                isLifting: false,
+                exercises: [
+                    { id: 1, name: "Pre-Run Dynamic Hip & Ankle Warm-Up", video: "https://youtube.com", sets: "10 Mins", rpe: "Easy" },
+                    { id: 2, name: "Glute & Core Activation Drills", video: "https://youtube.com", sets: "5 Mins", rpe: "Easy" },
+                    { id: 3, name: "Steady Aerobic Base Run", video: "https://youtube.com", sets: "3.0 Miles Continuous", rpe: "138-148 BPM" },
+                    { id: 4, name: "Lower Body Foam Rolling & Soft Tissue Flush", video: "https://youtube.com", sets: "15 Mins", rpe: "Recovery" }
+                ],
+                cues: [
+                    "Maintain steady Zone 2 heart rate without pushing into high-intensity sprints.",
+                    "Focus on smooth stride mechanics and rhythmic breathing.",
+                    "Flush out lower body tissue with foam rolling post-run."
+                ]
+            },
+            day7: {
+                title: "DAY 7: FULL REST & ACTIVE RECOVERY REGENERATION",
+                focus: "Systemic CNS Regeneration & Muscle Protein Synthesis",
+                description: "Gentle restorative nature walk (5,000-8,000 steps) + sauna/contrast shower.",
+                isLifting: false,
+                exercises: [
+                    { id: 1, name: "Full-Body Restorative Mobility & Foam Rolling", video: "https://youtube.com", sets: "15 Mins", rpe: "Recovery" },
+                    { id: 2, name: "90/90 Hip Flow & Thoracic Spine Extensions", video: "https://youtube.com", sets: "10 Mins", rpe: "Recovery" },
+                    { id: 3, name: "Hydration & High-Protein Nutrition Protocol", video: "https://youtube.com", sets: "All Day", rpe: "215g Protein" }
+                ],
+                cues: [
+                    "Prioritize 8+ hours of sleep and hit your 215g daily protein target.",
+                    "Keep movement light and restorative (gentle walking).",
+                    "Let your central nervous system fully decompress for the upcoming week."
+                ]
+            }
+        };
+
+        let currentDay = 'day1';
+        let userLogs = JSON.parse(localStorage.getItem('calvin_workout_logs') || '{}');
+        let completedDays = JSON.parse(localStorage.getItem('calvin_completed_days') || '{}');
+        let streak = parseInt(localStorage.getItem('calvin_streak') || '0');
+
+        function init() {
+            document.getElementById('streakCount').innerText = streak;
+            updateConsistency();
+            renderDay(currentDay);
+        }
+
+        function switchDay(day) {
+            currentDay = day;
+            renderDay(day);
+        }
+
+        function renderDay(dayKey) {
+            const data = workoutData[dayKey];
+            const container = document.getElementById('workoutContainer');
+            const isCompleted = completedDays[dayKey] || false;
+
+            const completeBtn = document.getElementById('completeBtn');
+            if (isCompleted) {
+                completeBtn.className = "w-full sm:w-auto px-5 py-2.5 bg-slate-800 text-emerald-400 border border-emerald-500/30 text-sm font-bold rounded-xl flex items-center justify-center gap-2";
+                completeBtn.innerHTML = "<span>✓</span> Completed";
+            } else {
+                completeBtn.className = "w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2";
+                completeBtn.innerHTML = "<span>✓</span> Mark Day Completed";
+            }
+
+            let html = `
+                <div class="glass-card p-6 rounded-3xl space-y-6">
+                    <div class="border-b border-slate-800 pb-4">
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Focus: ${data.focus}</span>
+                        <h2 class="text-xl font-black text-white mt-1">${data.title}</h2>
+                        <p class="text-xs text-slate-400 mt-1">${data.description}</p>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-3">#</th>
+                                    <th class="py-3 px-3">Exercise Name</th>
+                                    <th class="py-3 px-3">Video</th>
+                                    <th class="py-3 px-3">Prescribed</th>
+                                    <th class="py-3 px-3">Target RPE / Pace</th>
+                                    <th class="py-3 px-3">Week 1</th>
+                                    <th class="py-3 px-3">Week 2</th>
+                                    <th class="py-3 px-3">Week 3</th>
+                                    <th class="py-3 px-3">Week 4</th>
+                                    <th class="py-3 px-3">Week 5</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60">
+            `;
+
+            data.exercises.forEach((ex, idx) => {
+                const logKey = `${dayKey}_ex_${ex.id}`;
+                const w1 = userLogs[`${logKey}_w1`] || '';
+                const w2 = userLogs[`${logKey}_w2`] || '';
+                const w3 = userLogs[`${logKey}_w3`] || '';
+                const w4 = userLogs[`${logKey}_w4`] || '';
+                const w5 = userLogs[`${logKey}_w5`] || '';
+
+                html += `
+                    <tr class="hover:bg-slate-900/40 transition">
+                        <td class="py-3.5 px-3 font-bold text-slate-400">${idx + 1}</td>
+                        <td class="py-3.5 px-3 font-semibold text-white whitespace-nowrap">${ex.name}</td>
+                        <td class="py-3.5 px-3 whitespace-nowrap">
+                            <a href="${ex.video}" target="_blank" class="text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20 inline-flex items-center gap-1">Watch ➔</a>
+                        </td>
+                        <td class="py-3.5 px-3 text-slate-300 text-xs whitespace-nowrap">${ex.sets}</td>
+                        <td class="py-3.5 px-3 text-slate-400 text-xs whitespace-nowrap">${ex.rpe}</td>
+                        <td class="py-3.5 px-3"><input type="text" value="${w1}" onchange="saveLog('${logKey}_w1', this.value)" placeholder="Wt/Reps" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500"></td>
+                        <td class="py-3.5 px-3"><input type="text" value="${w2}" onchange="saveLog('${logKey}_w2', this.value)" placeholder="Wt/Reps" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500"></td>
+                        <td class="py-3.5 px-3"><input type="text" value="${w3}" onchange="saveLog('${logKey}_w3', this.value)" placeholder="Wt/Reps" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500"></td>
+                        <td class="py-3.5 px-3"><input type="text" value="${w4}" onchange="saveLog('${logKey}_w4', this.value)" placeholder="Wt/Reps" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500"></td>
+                        <td class="py-3.5 px-3"><input type="text" value="${w5}" onchange="saveLog('${logKey}_w5', this.value)" placeholder="Wt/Reps" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500"></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+            `;
+
+            if (data.cues && data.cues.length > 0) {
+                html += `
+                    <div class="mt-6 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+                        <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">💡 Form Cues & Protocol Notes</h4>
+                        <ul class="list-disc list-inside space-y-1 text-xs text-slate-300">
+                `;
+                data.cues.forEach(cue => {
+                    html += `<li>${cue}</li>`;
+                });
+                html += `
+                        </ul>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function saveLog(key, val) {
+            userLogs[key] = val;
+            localStorage.setItem('calvin_workout_logs', JSON.stringify(userLogs));
+        }
+
+        function markCurrentDayComplete() {
+            completedDays[currentDay] = !completedDays[currentDay];
+            if (completedDays[currentDay]) {
+                streak += 1;
+            } else {
+                streak = Math.max(0, streak - 1);
+            }
+            localStorage.setItem('calvin_completed_days', JSON.stringify(completedDays));
+            localStorage.setItem('calvin_streak', streak);
+            document.getElementById('streakCount').innerText = streak;
+            updateConsistency();
+            renderDay(currentDay);
+        }
+
+        function updateConsistency() {
+            const liftDays = ['day1', 'day2', 'day4', 'day5'];
+            let completed = liftDays.filter(d => completedDays[d]).length;
+            let pct = Math.round((completed / 4) * 100);
+            document.getElementById('consistencyPct').innerText = pct + '%';
+            document.getElementById('completedCount').innerText = completed + ' / 4 Lifts';
+            document.getElementById('consistencyBar').style.width = pct + '%';
+        }
+
+        let timerInterval = null;
+        let timeLeft = 90;
+
+        function startRestTimer(seconds) {
+            timeLeft = seconds;
+            document.getElementById('timerModal').classList.remove('hidden');
+            document.getElementById('modalTimerDisplay').innerText = formatTime(timeLeft);
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('modalTimerDisplay').innerText = formatTime(timeLeft);
+                document.getElementById('timerDisplay').innerText = formatTime(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timerModal').classList.add('hidden');
+                    alert('Rest timer finished! Time for your next set.');
+                }
+            }, 1000);
+        }
+
+        function adjustTimer(amount) {
+            timeLeft = Math.max(0, timeLeft + amount);
+            document.getElementById('modalTimerDisplay').innerText = formatTime(timeLeft);
+            document.getElementById('timerDisplay').innerText = formatTime(timeLeft);
+        }
+
+        function stopRestTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('timerModal').classList.add('hidden');
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
